@@ -1,0 +1,237 @@
+# ============================================================
+# PayWallet Lite - .gitignore
+# ============================================================
+
+# ============================================================
+# JAVA
+# ============================================================
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.nar
+hs_err_pid*
+replay_pid*
+
+# ============================================================
+# MAVEN
+# ============================================================
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/
+mvnw
+mvnw.cmd
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# ============================================================
+# INTELLIJ IDEA
+# ============================================================
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# ============================================================
+# ECLIPSE / STS
+# ============================================================
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+bin/
+*.springBeans
+
+# ============================================================
+# VS CODE
+# ============================================================
+.vscode/
+*.code-workspace
+
+# ============================================================
+# SMART TOMCAT & AUTRES PLUGINS INTELLIJ
+# ============================================================
+.smarttomcat/
+.smart-tomcat/
+
+# ============================================================
+# NETBEANS
+# ============================================================
+nbproject/
+nb-configuration.xml
+nbdist/
+.nb-gradle/
+
+# ============================================================
+# OS GENERATED
+# ============================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Linux
+*~
+.directory
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# ============================================================
+# FICHIERS SENSIBLES - SÉCURITÉ
+# ============================================================
+# Certificats et clés privées (NE JAMAIS COMMITER)
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+
+# Fichiers de configuration avec secrets
+*.env
+*.env.local
+*.env.production
+*.env.staging
+application-prod.properties
+application-prod.yml
+application-secret.properties
+application-secret.yml
+*-secret.properties
+*-secret.yml
+
+# Mots de passe et credentials
+credentials.json
+credentials.yml
+service-account.json
+secrets/
+.secrets/
+
+# ============================================================
+# LOGS
+# ============================================================
+logs/
+*.log
+*.log.*
+log/
+application.log
+spring.log
+catalina.out
+catalina.*.log
+
+# ============================================================
+# BASE DE DONNÉES
+# ============================================================
+*.sqlite
+*.db
+*.mdb
+*.mdf
+*.ldf
+data/
+oracle-data/
+
+# ============================================================
+# DOCKER (garder docker-compose.yml, ignorer les volumes)
+# ============================================================
+docker-compose.override.yml
+docker-compose.prod.yml
+docker-data/
+docker-volumes/
+.docker/
+
+# ============================================================
+# KAFKA
+# ============================================================
+kafka-data/
+kafka-logs/
+zookeeper-data/
+
+# ============================================================
+# CACHE & TEMP
+# ============================================================
+.cache/
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+*~
+\#*\#
+
+# ============================================================
+# DOCUMENTATION GÉNÉRÉE
+# ============================================================
+docs/api/generated/
+docs/javadoc/
+site/
+
+# ============================================================
+# SCRIPTS TEMPORAIRES
+# ============================================================
+create-structure.sh
+*.sh.bak
+run-debug.sh
+
+# ============================================================
+# FICHIERS SPÉCIFIQUES AU PROJET
+# ============================================================
+# Fichiers de configuration locale (copier depuis .sample)
+application-local.properties
+application-local.yml
+bootstrap-local.yml
+
+# Rapports de test et couverture
+jacoco.exec
+coverage/
+test-output/
+surefire-reports/
+failsafe-reports/
+
+# Fichiers de build spécifiques
+dependency-check-report.html
+spotbugs.xml
+pmd.xml
+checkstyle-result.xml
+
+# ============================================================
+# EXCEPTIONS (fichiers à NE PAS ignorer)
+# ============================================================
+# Garder les fichiers sample pour que les développeurs
+# puissent les copier et les adapter
+!*.sample
+!**/*.sample
+
+# Garder le wrapper Maven si vous l'utilisez
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties

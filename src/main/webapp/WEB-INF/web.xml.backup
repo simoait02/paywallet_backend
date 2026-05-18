@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <!-- ============================================================ -->
+    <!-- NOM DE L'APPLICATION                                         -->
+    <!-- ============================================================ -->
+    <display-name>PayWallet Lite Backend</display-name>
+    <description>Offline Mobile Wallet Payment System - PayLogic</description>
+
+    <!-- ============================================================ -->
+    <!-- CONFIGURATION SPRING RACINE (Services, Repositories, Security)-->
+    <!-- ============================================================ -->
+    <context-param>
+        <param-name>contextClass</param-name>
+        <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>com.paylogic.paywalletlite.config.root</param-value>
+    </context-param>
+
+    <!-- Listener de démarrage Spring -->
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+    <!-- ============================================================ -->
+    <!-- DISPATCHER SERVLET (Controllers REST)                        -->
+    <!-- ============================================================ -->
+    <servlet>
+        <servlet-name>dispatcher</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextClass</param-name>
+            <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
+        </init-param>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>com.paylogic.paywalletlite.config.web</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>dispatcher</servlet-name>
+        <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- ============================================================ -->
+    <!-- FILTRE ENCODING (UTF-8)                                      -->
+    <!-- ============================================================ -->
+    <filter>
+        <filter-name>encodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>encodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- ============================================================ -->
+    <!-- FILTRE SPRING SECURITY (JWT)                                -->
+    <!-- ============================================================ -->
+    <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- ============================================================ -->
+    <!-- CORS FILTER (Cross-Origin)                                   -->
+    <!-- ============================================================ -->
+    <filter>
+        <filter-name>corsFilter</filter-name>
+        <filter-class>com.paylogic.paywalletlite.config.web.CORSFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>corsFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+
+    <!-- ============================================================ -->
+    <!-- PAGES D'ERREUR                                               -->
+    <!-- ============================================================ -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/WEB-INF/views/error/404.html</location>
+    </error-page>
+
+    <error-page>
+        <error-code>500</error-code>
+        <location>/WEB-INF/views/error/500.html</location>
+    </error-page>
+
+    <!-- ============================================================ -->
+    <!-- PARAMÈTRES DE SESSION                                        -->
+    <!-- ============================================================ -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+            <secure>true</secure>
+        </cookie-config>
+    </session-config>
+
+    <!-- ============================================================ -->
+    <!-- MIME TYPES                                                   -->
+    <!-- ============================================================ -->
+    <mime-mapping>
+        <extension>json</extension>
+        <mime-type>application/json</mime-type>
+    </mime-mapping>
+
+</web-app>
