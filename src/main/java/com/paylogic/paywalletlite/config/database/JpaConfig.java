@@ -1,6 +1,6 @@
 package com.paylogic.paywalletlite.config.database;
 
-import jakarta.persistence.EntityManagerFactory;
+import javax.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,11 +42,11 @@ public class JpaConfig {
 
     private Properties jpaProperties() {
         Properties properties = new Properties();
-        properties.setProperty("hibernate.dialect", hibernateProperties.getDialect());
+        properties.setProperty("hibernate.dialect", "org.hibernate.dialect.Oracle12cDialect");
         properties.setProperty("hibernate.format_sql", String.valueOf(hibernateProperties.isFormatSql()));
         properties.setProperty("hibernate.use_sql_comments", "true");
         properties.setProperty("hibernate.jdbc.batch_size", "20");
-        properties.setProperty("hibernate.hbm2ddl.auto", hibernateProperties.getDdlAuto());
+        properties.setProperty("hibernate.hbm2ddl.auto", "update");
         return properties;
     }
 

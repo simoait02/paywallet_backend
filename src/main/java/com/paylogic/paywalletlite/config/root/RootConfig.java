@@ -9,12 +9,13 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @ComponentScan(basePackages = {
         "com.paylogic.paywalletlite.service",
+        "com.paylogic.paywalletlite.mapper",
         "com.paylogic.paywalletlite.repository",
-        "com.paylogic.paywalletlite.security",
         "com.paylogic.paywalletlite.util",
         "com.paylogic.paywalletlite.validation",
         "com.paylogic.paywalletlite.config.database",
-        "com.paylogic.paywalletlite.config.security"
+        "com.paylogic.paywalletlite.security",           // 🔥 JwtTokenProvider + crypto
+        "com.paylogic.paywalletlite.config.security"      // 🔥 SecurityConfig avec AntPathRequestMatcher
 })
 @Import({
         AppConfig.class,

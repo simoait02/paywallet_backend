@@ -3,7 +3,7 @@ package com.paylogic.paywalletlite.domain.identity;
 import com.paylogic.paywalletlite.domain.identity.enums.AccountStatus;
 import com.paylogic.paywalletlite.domain.identity.enums.KYCStatus;
 import com.paylogic.paywalletlite.domain.identity.enums.RoleType;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -73,6 +73,16 @@ public class User {
     @Column(name = "kyc_verification_status")
     private KYCStatus kycVerificationStatus;
 
+    public List<DeviceSession> getSessions() {
+        return sessions;
+    }
+
+    public void setSessions(List<DeviceSession> sessions) {
+        this.sessions = sessions;
+    }
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<DeviceSession> sessions = new ArrayList<>();
     // --- Relations ---
     //@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
     //private KYCProfile kycProfile;

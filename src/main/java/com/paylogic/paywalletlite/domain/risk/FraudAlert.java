@@ -3,7 +3,7 @@ package com.paylogic.paywalletlite.domain.risk;
 import com.paylogic.paywalletlite.domain.risk.enums.AlertSeverity;
 import com.paylogic.paywalletlite.domain.risk.enums.AlertStatus;
 import com.paylogic.paywalletlite.domain.risk.enums.AlertType;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;

@@ -1,7 +1,8 @@
 package com.paylogic.paywalletlite.domain.crypto;
 
 import com.paylogic.paywalletlite.domain.crypto.enums.CertificateStatus;
-import jakarta.persistence.*;
+import com.paylogic.paywalletlite.domain.wallet.Wallet;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
@@ -17,7 +18,12 @@ public class Certificate {
     @Column(name = "certificate_id", updatable = false, nullable = false)
     private UUID certificateId;
 
-    @Column(name = "wallet_id", nullable = false)
+    // Relation JPA vers le wallet
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wallet_id", nullable = false)
+    private Wallet wallet;
+
+    @Column(name = "wallet_id", insertable = false, updatable = false)
     private UUID walletId;
 
     @Column(name = "certificate_pem", nullable = false, length = 4000)
@@ -26,7 +32,12 @@ public class Certificate {
     @Column(name = "thumbprint", nullable = false, unique = true, length = 255)
     private String thumbprint;
 
-    @Column(name = "issuer_ca_id", nullable = false)
+    // Relation JPA vers la CA émettrice
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "issuer_ca_id", nullable = false)
+    private CertificateAuthority issuerCa;
+
+    @Column(name = "issuer_ca_id", insertable = false, updatable = false)
     private UUID issuerCaId;
 
     @Column(name = "issued_at", nullable = false)
@@ -50,12 +61,22 @@ public class Certificate {
         this.status = CertificateStatus.PENDING;
     }
 
-    // Getters et Setters
+    // Getters & Setters
     public UUID getCertificateId() { return certificateId; }
     public void setCertificateId(UUID certificateId) { this.certificateId = certificateId; }
 
-    public UUID getWalletId() { return walletId; }
-    public void setWalletId(UUID walletId) { this.walletId = walletId; }
+    public Wallet getWallet() { return wallet; }
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
+        if (wallet != null) {
+            this.walletId = wallet.getWalletId();
+        }
+    }
+
+    public UUID getWalletId() {
+        return walletId != null ? walletId :
+                (wallet != null ? wallet.getWalletId() : null);
+    }
 
     public String getCertificatePem() { return certificatePem; }
     public void setCertificatePem(String certificatePem) { this.certificatePem = certificatePem; }
@@ -63,8 +84,18 @@ public class Certificate {
     public String getThumbprint() { return thumbprint; }
     public void setThumbprint(String thumbprint) { this.thumbprint = thumbprint; }
 
-    public UUID getIssuerCaId() { return issuerCaId; }
-    public void setIssuerCaId(UUID issuerCaId) { this.issuerCaId = issuerCaId; }
+    public CertificateAuthority getIssuerCa() { return issuerCa; }
+    public void setIssuerCa(CertificateAuthority issuerCa) {
+        this.issuerCa = issuerCa;
+        if (issuerCa != null) {
+            this.issuerCaId = issuerCa.getCaId();
+        }
+    }
+
+    public UUID getIssuerCaId() {
+        return issuerCaId != null ? issuerCaId :
+                (issuerCa != null ? issuerCa.getCaId() : null);
+    }
 
     public LocalDateTime getIssuedAt() { return issuedAt; }
     public void setIssuedAt(LocalDateTime issuedAt) { this.issuedAt = issuedAt; }
@@ -80,4 +111,19 @@ public class Certificate {
 
     public String getRevocationReason() { return revocationReason; }
     public void setRevocationReason(String revocationReason) { this.revocationReason = revocationReason; }
+
+    // Méthodes métier
+    public boolean isExpired() {
+        return expiresAt != null && expiresAt.isBefore(LocalDateTime.now());
+    }
+
+    public boolean isValid() {
+        return status == CertificateStatus.VALID && !isExpired();
+    }
+
+    public void revoke(String reason) {
+        this.status = CertificateStatus.REVOKED;
+        this.revokedAt = LocalDateTime.now();
+        this.revocationReason = reason;
+    }
 }

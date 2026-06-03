@@ -1,7 +1,7 @@
 package com.paylogic.paywalletlite.domain.transaction;
 
 import com.paylogic.paywalletlite.domain.transaction.enums.LedgerType;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;

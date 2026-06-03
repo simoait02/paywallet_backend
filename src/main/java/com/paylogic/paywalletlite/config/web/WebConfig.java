@@ -25,7 +25,9 @@ import java.util.TimeZone;
  */
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "com.paylogic.paywalletlite.controller")
+@ComponentScan(basePackages = {
+        "com.paylogic.paywalletlite.controller",
+})
 public class WebConfig implements WebMvcConfigurer {
 
     /**

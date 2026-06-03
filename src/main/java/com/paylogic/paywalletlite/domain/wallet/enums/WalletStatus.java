@@ -9,6 +9,14 @@ package com.paylogic.paywalletlite.domain.wallet.enums;
  * ACTIVE → FROZEN (gel administratif)
  */
 public enum WalletStatus {
+    /**status lors de la creation de la wallet avant l'approval */
+    PENDING_APPROVAL,
+
+    /** Demande de création de la wallet approvée*/
+    APPROVED,
+
+    /** Demande de création de la Wallet rejetée*/
+    REJECTED,
 
     /** Portefeuille actif : toutes les opérations sont autorisées */
     ACTIVE,
@@ -34,6 +42,12 @@ public enum WalletStatus {
      */
     public String getDescription() {
         switch (this) {
+            case PENDING_APPROVAL:
+                return "La Wallet vient d'être créer et attend l'activation";
+            case APPROVED:
+                return "La Demande de création de la wallet est approuvée";
+            case REJECTED:
+                return "La Demande de création de la wallet est refusée";
             case ACTIVE:
                 return "Le portefeuille est actif et toutes les opérations sont autorisées.";
             case LOCKED:

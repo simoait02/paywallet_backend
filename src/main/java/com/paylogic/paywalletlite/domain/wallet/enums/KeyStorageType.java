@@ -19,7 +19,12 @@ public enum KeyStorageType {
      * Clé stockée dans le Keychain iOS, avec support du Secure Enclave.
      * Niveau de sécurité le plus élevé sur iOS.
      */
-    APPLE_KEYCHAIN;
+    APPLE_KEYCHAIN,
+
+    /**
+     * Clé encryptée et stocké dans la base de données du server.
+     * */
+    SERVER_ENCRYPTED;
 
     /**
      * Méthode utilitaire pour obtenir une description lisible du type de stockage.
@@ -30,6 +35,8 @@ public enum KeyStorageType {
                 return "Stockage sécurisé via Android Keystore (TEE/StrongBox).";
             case APPLE_KEYCHAIN:
                 return "Stockage sécurisé via Apple Keychain et Secure Enclave.";
+            case SERVER_ENCRYPTED:
+                return "Stockage sécurisé dans la base données du server";
             default:
                 return "Type de stockage inconnu.";
         }

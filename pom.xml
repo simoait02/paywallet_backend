@@ -1,357 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+<modelVersion>4.0.0</modelVersion>
+
+<!-- ========================= -->
+<!-- PROJECT INFO -->
+<!-- ========================= -->
+
+<groupId>com.paylogic</groupId>
+<artifactId>paywallet-lite</artifactId>
+<version>1.0.0-SNAPSHOT</version>
+<packaging>war</packaging>
+
+<name>PayWallet Lite Backend</name>
+<description>Offline-first digital wallet backend</description>
+
+<!-- ========================= -->
+<!-- PROPERTIES -->
+<!-- ========================= -->
+
+<properties>
+
+    <!-- Java 8 -->
+    <java.version>1.8</java.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+
+    <!-- Spring 5.3.x (dernière version compatible Java 8) -->
+    <spring.version>5.3.39</spring.version>
+    <spring.security.version>5.8.16</spring.security.version>
+
+    <!-- Hibernate 5.6.x (dernière version compatible Java 8) -->
+    <hibernate.version>5.6.15.Final</hibernate.version>
+
+    <!-- Oracle -->
+    <oracle.jdbc.version>23.3.0.23.09</oracle.jdbc.version>
+
+    <!-- Kafka -->
+    <kafka.version>3.8.0</kafka.version>
+    <spring.kafka.version>2.9.13</spring.kafka.version>
+
+    <!-- JWT jjwt 0.11.5 compatible Java 8 -->
+    <jjwt.version>0.11.5</jjwt.version>
+
+    <!-- Logging -->
+    <log4j2.version>2.23.1</log4j2.version>
+
+    <!-- Flyway 9.x (dernière version compatible Java 8) -->
+    <flyway.version>9.22.3</flyway.version>
+
+    <!-- Lombok -->
+    <lombok.version>1.18.34</lombok.version>
+
+    <!-- MapStruct -->
+    <mapstruct.version>1.5.5.Final</mapstruct.version>
+
+    <!-- JUnit -->
+    <junit.jupiter.version>5.9.3</junit.jupiter.version>
+    <mockito.version>4.11.0</mockito.version>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+</properties>
+
+<!-- ========================= -->
+<!-- DEPENDENCIES -->
+<!-- ========================= -->
+
+<dependencies>
 
     <!-- ========================= -->
-    <!-- PROJECT INFO -->
+    <!-- SERVLET API (javax.servlet pour Java 8) -->
     <!-- ========================= -->
 
-    <groupId>com.paylogic</groupId>
-    <artifactId>paywallet-lite</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <packaging>war</packaging>
-
-    <name>PayWallet Lite Backend</name>
-    <description>Offline-first digital wallet backend</description>
-
-    <!-- ========================= -->
-    <!-- PROPERTIES -->
-    <!-- ========================= -->
-
-    <properties>
-
-        <!-- Java -->
-        <java.version>17</java.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-
-        <!-- Spring -->
-        <spring.version>6.1.14</spring.version>
-        <spring.security.version>6.3.1</spring.security.version>
-
-        <!-- Hibernate -->
-        <hibernate.version>6.5.2.Final</hibernate.version>
-
-        <!-- Oracle -->
-        <oracle.jdbc.version>23.3.0.23.09</oracle.jdbc.version>
-
-        <!-- Kafka -->
-        <kafka.version>3.8.0</kafka.version>
-
-        <!-- JWT -->
-        <jjwt.version>0.11.5</jjwt.version>
-
-        <!-- Logging -->
-        <log4j2.version>2.23.1</log4j2.version>
-
-        <!-- Flyway -->
-        <flyway.version>10.17.0</flyway.version>
-
-        <!-- Lombok -->
-        <lombok.version>1.18.34</lombok.version>
-
-        <!-- MapStruct -->
-        <mapstruct.version>1.5.5.Final</mapstruct.version>
-
-        <!-- JUnit -->
-        <junit.jupiter.version>5.10.2</junit.jupiter.version>
-
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    </properties>
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>4.0.1</version>
+        <scope>provided</scope>
+    </dependency>
 
     <!-- ========================= -->
-    <!-- DEPENDENCIES -->
+    <!-- SPRING CORE 5.3.x -->
     <!-- ========================= -->
 
-    <dependencies>
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${spring.version}</version>
+    </dependency>
 
-        <!-- ========================= -->
-        <!-- SPRING CORE -->
-        <!-- ========================= -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-webmvc</artifactId>
+        <version>${spring.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <version>6.1.0</version>
-            <scope>provided</scope>
-        </dependency>
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-tx</artifactId>
+        <version>${spring.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-tx</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-orm</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-
-        <!-- ========================= -->
-        <!-- SPRING SECURITY -->
-        <!-- ========================= -->
-
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-web</artifactId>
-            <version>${spring.security.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-config</artifactId>
-            <version>${spring.security.version}</version>
-        </dependency>
-
-        <!-- ========================= -->
-        <!-- JPA / HIBERNATE -->
-        <!-- ========================= -->
-
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>${hibernate.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <version>3.1.0</version>
-        </dependency>
-
-        <!-- ========================= -->
-        <!-- ORACLE JDBC -->
-        <!-- ========================= -->
-
-        <dependency>
-            <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc11</artifactId>
-            <version>${oracle.jdbc.version}</version>
-        </dependency>
-
-        <!-- ========================= -->
-        <!-- CONNECTION POOL -->
-        <!-- ========================= -->
-
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>5.1.0</version>
-        </dependency>
-
-        <!-- ========================= -->
-        <!-- JWT -->
-        <!-- ========================= -->
-
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-            <version>${jjwt.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>${jjwt.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>${jjwt.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- ========================= -->
-        <!-- JACKSON -->
-        <!-- ========================= -->
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.17.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.17.2</version>
-        </dependency>
-
-        <!-- ========================= -->
-        <!-- VALIDATION -->
-        <!-- ========================= -->
-
-        <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>8.0.1.Final</version>
-        </dependency>
-
-        <!-- ========================= -->
-        <!-- KAFKA -->
-        <!-- ========================= -->
-
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-            <version>3.2.2</version>
-        </dependency>
-
-        <!-- ========================= -->
-        <!-- REDIS -->
-        <!-- ========================= -->
-
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-redis</artifactId>
-            <version>3.3.2</version>
-        </dependency>
-
-
-        <!-- ========================= -->
-        <!-- LOGGING -->
-        <!-- ========================= -->
-        <!-- SLF4J API -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>2.0.9</version>
-        </dependency>
-
-        <!-- SLF4J vers Log4j2 bridge -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j2-impl</artifactId>
-            <version>2.22.0</version>
-        </dependency>
-
-        <!-- Log4j2 Core -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.22.0</version>
-        </dependency>
-
-        <!-- Log4j2 API -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>2.22.0</version>
-        </dependency>
-
-        <!-- ========================= -->
-        <!-- LOMBOK -->
-        <!-- ========================= -->
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- ========================= -->
-        <!-- MAPSTRUCT -->
-        <!-- ========================= -->
-
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>${mapstruct.version}</version>
-        </dependency>
-
-        <!-- ========================= -->
-        <!-- TEST -->
-        <!-- ========================= -->
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>${spring.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-    </dependencies>
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-orm</artifactId>
+        <version>${spring.version}</version>
+    </dependency>
 
     <!-- ========================= -->
-    <!-- BUILD -->
+    <!-- SPRING SECURITY 5.8.x -->
     <!-- ========================= -->
 
-    <build>
+    <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-web</artifactId>
+        <version>${spring.security.version}</version>
+    </dependency>
 
-        <finalName>paywallet-lite</finalName>
+    <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-config</artifactId>
+        <version>${spring.security.version}</version>
+    </dependency>
 
-        <plugins>
+    <!-- ========================= -->
+    <!-- JPA / HIBERNATE 5.6.x -->
+    <!-- ========================= -->
 
-            <!-- Java Compiler -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+    <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-core</artifactId>
+        <version>${hibernate.version}</version>
+    </dependency>
 
-                <configuration>
+    <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-entitymanager</artifactId>
+        <version>${hibernate.version}</version>
+    </dependency>
 
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+    <dependency>
+        <groupId>javax.persistence</groupId>
+        <artifactId>javax.persistence-api</artifactId>
+        <version>2.2</version>
+    </dependency>
 
-                    <annotationProcessorPaths>
+    <!-- ========================= -->
+    <!-- HIBERNATE VALIDATOR (javax.validation) -->
+    <!-- ========================= -->
 
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
+    <dependency>
+        <groupId>org.hibernate.validator</groupId>
+        <artifactId>hibernate-validator</artifactId>
+        <version>6.2.5.Final</version>
+    </dependency>
 
-                        <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>${mapstruct.version}</version>
-                        </path>
+    <dependency>
+        <groupId>javax.validation</groupId>
+        <artifactId>validation-api</artifactId>
+        <version>2.0.1.Final</version>
+    </dependency>
 
-                    </annotationProcessorPaths>
+    <!-- ========================= -->
+    <!-- ORACLE JDBC -->
+    <!-- ========================= -->
 
-                </configuration>
+    <dependency>
+        <groupId>com.oracle.database.jdbc</groupId>
+        <artifactId>ojdbc8</artifactId>
+        <version>${oracle.jdbc.version}</version>
+    </dependency>
 
-            </plugin>
+    <!-- ========================= -->
+    <!-- CONNECTION POOL -->
+    <!-- ========================= -->
 
-            <!-- WAR Plugin -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.4.0</version>
-                <configuration>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>  <!-- ✅ Déjà OK chez toi -->
-                </configuration>
-            </plugin>
+    <dependency>
+        <groupId>com.zaxxer</groupId>
+        <artifactId>HikariCP</artifactId>
+        <version>4.0.3</version>
+    </dependency>
 
-        </plugins>
+    <!-- ========================= -->
+    <!-- JWT -->
+    <!-- ========================= -->
 
-    </build>
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-api</artifactId>
+        <version>${jjwt.version}</version>
+    </dependency>
+
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-impl</artifactId>
+        <version>${jjwt.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-jackson</artifactId>
+        <version>${jjwt.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+
+    <!-- ========================= -->
+    <!-- JACKSON -->
+    <!-- ========================= -->
+
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>2.15.2</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr310</artifactId>
+        <version>2.15.2</version>
+    </dependency>
+
+    <!-- ========================= -->
+    <!-- JAVAX ANNOTATION API -->
+    <!-- ========================= -->
+
+    <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>javax.annotation-api</artifactId>
+        <version>1.3.2</version>
+    </dependency>
+
+    <!-- ========================= -->
+    <!-- KAFKA -->
+    <!-- ========================= -->
+
+    <dependency>
+        <groupId>org.springframework.kafka</groupId>
+        <artifactId>spring-kafka</artifactId>
+        <version>${spring.kafka.version}</version>
+    </dependency>
+
+    <!-- ========================= -->
+    <!-- REDIS -->
+    <!-- ========================= -->
+
+    <dependency>
+        <groupId>org.springframework.data</groupId>
+        <artifactId>spring-data-redis</artifactId>
+        <version>2.7.18</version>
+    </dependency>
+
+    <!-- ========================= -->
+    <!-- LOGGING -->
+    <!-- ========================= -->
+
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.7.36</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j-impl</artifactId>
+        <version>2.20.0</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>2.20.0</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>2.20.0</version>
+    </dependency>
+
+    <!-- ========================= -->
+    <!-- LOMBOK -->
+    <!-- ========================= -->
+
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
+        <scope>provided</scope>
+    </dependency>
+
+    <!-- ========================= -->
+    <!-- MAPSTRUCT -->
+    <!-- ========================= -->
+
+    <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>${mapstruct.version}</version>
+    </dependency>
+
+    <!-- ========================= -->
+    <!-- FLYWAY 9.x -->
+    <!-- ========================= -->
+
+    <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-core</artifactId>
+        <version>${flyway.version}</version>
+    </dependency>
+
+    <!-- ========================= -->
+    <!-- TEST -->
+    <!-- ========================= -->
+
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <version>${spring.version}</version>
+        <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
+        <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-junit-jupiter</artifactId>
+        <version>${mockito.version}</version>
+        <scope>test</scope>
+    </dependency>
+
+</dependencies>
+
+<!-- ========================= -->
+<!-- BUILD -->
+<!-- ========================= -->
+
+<build>
+
+    <finalName>paywallet-lite</finalName>
+
+    <plugins>
+
+        <!-- Java Compiler -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.13.0</version>
+
+            <configuration>
+                <source>${java.version}</source>
+                <target>${java.version}</target>
+
+                <annotationProcessorPaths>
+
+                    <path>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok</artifactId>
+                        <version>${lombok.version}</version>
+                    </path>
+
+                    <path>
+                        <groupId>org.mapstruct</groupId>
+                        <artifactId>mapstruct-processor</artifactId>
+                        <version>${mapstruct.version}</version>
+                    </path>
+
+                </annotationProcessorPaths>
+
+            </configuration>
+
+        </plugin>
+
+        <!-- WAR Plugin -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>3.4.0</version>
+            <configuration>
+                <failOnMissingWebXml>false</failOnMissingWebXml>
+            </configuration>
+        </plugin>
+
+    </plugins>
+
+</build>
 
 </project>

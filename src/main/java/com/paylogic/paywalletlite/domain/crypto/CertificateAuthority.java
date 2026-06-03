@@ -1,9 +1,12 @@
 package com.paylogic.paywalletlite.domain.crypto;
 
-import jakarta.persistence.*;
+import com.paylogic.paywalletlite.domain.crypto.enums.CAStatus;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -34,11 +37,20 @@ public class CertificateAuthority {
     @Column(name = "key_algorithm", length = 50)
     private String keyAlgorithm;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private CAStatus status;
+
+    // Relation vers les certificats émis par cette CA
+    @OneToMany(mappedBy = "issuerCa", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Certificate> issuedCertificates = new ArrayList<>();
+
     public CertificateAuthority() {
         this.createdAt = LocalDateTime.now();
+        this.status = CAStatus.ACTIVE;
     }
 
-    // Getters et Setters
+    // Getters & Setters
     public UUID getCaId() { return caId; }
     public void setCaId(UUID caId) { this.caId = caId; }
 
@@ -59,4 +71,19 @@ public class CertificateAuthority {
 
     public String getKeyAlgorithm() { return keyAlgorithm; }
     public void setKeyAlgorithm(String keyAlgorithm) { this.keyAlgorithm = keyAlgorithm; }
+
+    public CAStatus getStatus() { return status; }
+    public void setStatus(CAStatus status) { this.status = status; }
+
+    public List<Certificate> getIssuedCertificates() { return issuedCertificates; }
+    public void setIssuedCertificates(List<Certificate> issuedCertificates) { this.issuedCertificates = issuedCertificates; }
+
+    // Méthodes métier
+    public boolean isActive() {
+        return status == CAStatus.ACTIVE;
+    }
+
+    public boolean isExpired() {
+        return expiresAt != null && expiresAt.isBefore(LocalDateTime.now());
+    }
 }

@@ -1,7 +1,7 @@
 package com.paylogic.paywalletlite.domain.notification;
 
 import com.paylogic.paywalletlite.domain.notification.enums.AuditEventType;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;

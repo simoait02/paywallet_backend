@@ -7,7 +7,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 
 /**
  * Configuration CORS (Cross-Origin Resource Sharing).
@@ -21,7 +21,8 @@ public class CORSConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Origines autorisées (Flutter mobile + debug)
-        configuration.setAllowedOrigins(List.of(
+        // 🔧 CORRECTION : List.of() → Arrays.asList() (Java 8)
+        configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost",
                 "http://localhost:8080",
                 "capacitor://localhost",  // Ionic/Capacitor
@@ -42,7 +43,8 @@ public class CORSConfig {
         ));
 
         // Exposition des headers
-        configuration.setExposedHeaders(List.of("Authorization", "X-Auth-Token"));
+        // 🔧 CORRECTION : List.of() → Collections.singletonList() pour 1 élément, ou Arrays.asList()
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Auth-Token"));
 
         // Credentials (cookies, auth)
         configuration.setAllowCredentials(true);

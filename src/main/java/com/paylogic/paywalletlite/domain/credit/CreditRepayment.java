@@ -2,7 +2,7 @@ package com.paylogic.paywalletlite.domain.credit;
 
 import com.paylogic.paywalletlite.domain.credit.enums.RepaymentStatus;
 import com.paylogic.paywalletlite.domain.credit.enums.RepaymentType;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
