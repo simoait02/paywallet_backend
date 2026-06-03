@@ -8,7 +8,7 @@ import com.paylogic.paywalletlite.dto.request.UpdateUserRequestDto;
 import com.paylogic.paywalletlite.dto.response.ApiErrorResponseDto;
 import com.paylogic.paywalletlite.exception.BusinessException;
 import com.paylogic.paywalletlite.service.identity.UserService;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,6 @@
 package com.paylogic.paywalletlite.domain.token;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
@@ -16,16 +16,17 @@ public class TokenSignature {
     @Column(name = "signature_id", updatable = false, nullable = false)
     private UUID signatureId;
 
-    @Column(name = "token_id", nullable = false)
-    private UUID tokenId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "token_id", nullable = false, unique = true)
+    private Token token;
 
     @Column(name = "signature_algorithm", nullable = false, length = 50)
     private String signatureAlgorithm;
 
-    @Column(name = "signature_value", nullable = false, length = 4000)
+    @Column(name = "signature_value", nullable = false, length = 512)
     private String signatureValue;
 
-    @Column(name = "issuer_public_key", nullable = false, length = 4000)
+    @Column(name = "issuer_public_key", nullable = false, length = 1024)
     private String issuerPublicKey;
 
     @Column(name = "signed_at", nullable = false)
@@ -38,12 +39,12 @@ public class TokenSignature {
         this.signedAt = LocalDateTime.now();
     }
 
-    // Getters et Setters
+    // Getters & Setters
     public UUID getSignatureId() { return signatureId; }
     public void setSignatureId(UUID signatureId) { this.signatureId = signatureId; }
 
-    public UUID getTokenId() { return tokenId; }
-    public void setTokenId(UUID tokenId) { this.tokenId = tokenId; }
+    public Token getToken() { return token; }
+    public void setToken(Token token) { this.token = token; }
 
     public String getSignatureAlgorithm() { return signatureAlgorithm; }
     public void setSignatureAlgorithm(String signatureAlgorithm) { this.signatureAlgorithm = signatureAlgorithm; }

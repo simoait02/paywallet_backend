@@ -1,9 +1,8 @@
 package com.paylogic.paywalletlite.dto.request;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import com.paylogic.paywalletlite.domain.identity.enums.RoleType;
+
+import javax.validation.constraints.*;
 
 public class RegisterRequestDto {
 
@@ -13,6 +12,8 @@ public class RegisterRequestDto {
 
     @Email(message = "Invalid email format")
     private String email;
+
+    private RoleType role;
 
     @NotBlank(message = "First name is required")
     @Size(max = 100, message = "First name too long")
@@ -32,6 +33,19 @@ public class RegisterRequestDto {
     @Size(min = 4, max = 6, message = "PIN must be 4-6 digits")
     @Pattern(regexp = "^[0-9]+$", message = "PIN must contain only digits")
     private String pin;
+
+    // ============================================================
+    // NOUVEAUX CHAMPS : Informations du device
+    // ============================================================
+
+    @NotBlank(message = "Device name is required")
+    private String deviceName;
+
+    @NotBlank(message = "Hardware ID is required")
+    private String hardwareId;
+
+    @NotNull(message = "Platform is required")
+    private String platform; // ANDROID ou IOS
 
     public RegisterRequestDto() {}
 
@@ -55,4 +69,37 @@ public class RegisterRequestDto {
 
     public String getPin() { return pin; }
     public void setPin(String pin) { this.pin = pin; }
+
+    public RoleType getRole() {
+        return role;
+    }
+
+    public void setRole(RoleType role) {
+        this.role = role;
+    }
+
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
+    }
+
+    public String getHardwareId() {
+        return hardwareId;
+    }
+
+    public void setHardwareId(String hardwareId) {
+        this.hardwareId = hardwareId;
+    }
+
+    public String getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform(String platform) {
+        this.platform = platform;
+    }
 }

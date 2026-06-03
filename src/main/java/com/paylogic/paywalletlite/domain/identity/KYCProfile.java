@@ -1,7 +1,7 @@
 package com.paylogic.paywalletlite.domain.identity;
 
 import com.paylogic.paywalletlite.domain.identity.enums.KYCStatus;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
@@ -27,8 +27,27 @@ public class KYCProfile {
     @Column(name = "document_type", length = 50)
     private String documentType;
 
-    @Column(name = "document_number", length = 100)
-    private String documentNumber;
+    @Column(name = "card_number", length = 100)
+    private String cardNumber;
+
+    // =====================================================
+    // DOCUMENTS KYC
+    // =====================================================
+
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "selfie_picture")
+    private byte[] selfiePicture;
+
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "cin_recto")
+    private byte[] cinRecto;
+
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "cin_verso")
+    private byte[] cinVerso;
 
     @Column(name = "expiry_date")
     private LocalDateTime expiryDate;
@@ -50,8 +69,8 @@ public class KYCProfile {
     public String getDocumentType() { return documentType; }
     public void setDocumentType(String documentType) { this.documentType = documentType; }
 
-    public String getDocumentNumber() { return documentNumber; }
-    public void setDocumentNumber(String documentNumber) { this.documentNumber = documentNumber; }
+    public String getCardNumber() { return cardNumber; }
+    public void setCardNumber(String cardNumber) { this.cardNumber = cardNumber; }
 
     public LocalDateTime getExpiryDate() { return expiryDate; }
     public void setExpiryDate(LocalDateTime expiryDate) { this.expiryDate = expiryDate; }

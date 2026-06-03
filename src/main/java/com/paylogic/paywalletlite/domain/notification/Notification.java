@@ -3,7 +3,7 @@ package com.paylogic.paywalletlite.domain.notification;
 import com.paylogic.paywalletlite.domain.notification.enums.NotificationChannel;
 import com.paylogic.paywalletlite.domain.notification.enums.NotificationStatus;
 import com.paylogic.paywalletlite.domain.notification.enums.NotificationType;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;

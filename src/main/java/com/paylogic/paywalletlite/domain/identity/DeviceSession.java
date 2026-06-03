@@ -1,7 +1,7 @@
 package com.paylogic.paywalletlite.domain.identity;
 
 import com.paylogic.paywalletlite.domain.identity.enums.SessionStatus;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
@@ -17,11 +17,35 @@ public class DeviceSession {
     @Column(name = "session_id", updatable = false, nullable = false)
     private UUID sessionId;
 
-    @Column(name = "device_id", nullable = false)
+    @Column(name = "device_id", insertable = false, updatable = false)
     private UUID deviceId;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", insertable = false, updatable = false)
     private UUID userId;
+
+    public Device getDevice() {
+        return device;
+    }
+
+    public void setDevice(Device device) {
+        this.device = device;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_id", nullable = false)
+    private Device device;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(name = "jwt_token_hash", nullable = false, length = 255)
     private String jwtTokenHash;

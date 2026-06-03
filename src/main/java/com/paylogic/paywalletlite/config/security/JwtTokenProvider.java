@@ -1,6 +1,7 @@
 package com.paylogic.paywalletlite.config.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -36,7 +37,8 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessTokenValidity);
 
-        var builder = Jwts.builder()
+        // 🔧 CORRECTION : var → JwtBuilder (Java 8 n'a pas 'var')
+        JwtBuilder builder = Jwts.builder()
                 .setSubject(userId)
                 .setId(UUID.randomUUID().toString())
                 .setIssuedAt(now)

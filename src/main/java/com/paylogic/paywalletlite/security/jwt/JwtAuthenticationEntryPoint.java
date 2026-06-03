@@ -2,9 +2,9 @@ package com.paylogic.paywalletlite.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paylogic.paywalletlite.dto.response.ApiErrorResponseDto;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;

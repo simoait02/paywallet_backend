@@ -14,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -32,55 +31,25 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
-                .csrf(csrf -> csrf.disable())
-
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
-                .exceptionHandling(ex ->
-                        ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                )
-
-                .authorizeHttpRequests(auth -> auth
-
-                        .requestMatchers(
-                                AntPathRequestMatcher.antMatcher(
-                                        HttpMethod.POST,
-                                        "/api/v1/auth/register"
-                                )
-                        ).permitAll()
-
-                        .requestMatchers(
-                                AntPathRequestMatcher.antMatcher(
-                                        HttpMethod.POST,
-                                        "/api/v1/auth/login"
-                                )
-                        ).permitAll()
-
-                        .requestMatchers(
-                                AntPathRequestMatcher.antMatcher(
-                                        HttpMethod.POST,
-                                        "/api/v1/auth/refresh"
-                                )
-                        ).permitAll()
-
-                        .requestMatchers(
-                                AntPathRequestMatcher.antMatcher(
-                                        "/api/v1/admin/**"
-                                )
-                        ).hasRole("ADMIN")
-
-                        .anyRequest().authenticated()
-                )
-
+                .csrf().disable()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .exceptionHandling()
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .and()
+                .authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
+                .antMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+                .and()
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
-
         return http.build();
     }
 
@@ -91,8 +60,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config
-    ) throws Exception {
+            AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 }

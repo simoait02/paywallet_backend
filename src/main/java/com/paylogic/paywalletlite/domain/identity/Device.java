@@ -2,10 +2,12 @@ package com.paylogic.paywalletlite.domain.identity;
 
 import com.paylogic.paywalletlite.domain.identity.enums.DevicePlatform;
 import com.paylogic.paywalletlite.domain.identity.enums.DeviceStatus;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -18,8 +20,39 @@ public class Device {
     @Column(name = "device_id", updatable = false, nullable = false)
     private UUID deviceId;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", insertable = false, updatable = false)
     private UUID userId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public List<DeviceSession> getSessions() {
+        return sessions;
+    }
+
+    public void setSessions(List<DeviceSession> sessions) {
+        this.sessions = sessions;
+    }
+
+    public Boolean getPrimary() {
+        return isPrimary;
+    }
+
+    public void setPrimary(Boolean primary) {
+        isPrimary = primary;
+    }
+
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
+    private List<DeviceSession> sessions = new ArrayList<>();
 
     @Column(name = "device_name", length = 100)
     private String deviceName;

@@ -2,7 +2,8 @@ package com.paylogic.paywalletlite.domain.crypto;
 
 import com.paylogic.paywalletlite.domain.crypto.enums.ServerKeyPurpose;
 import com.paylogic.paywalletlite.domain.crypto.enums.ServerKeyStatus;
-import jakarta.persistence.*;
+import com.paylogic.paywalletlite.domain.wallet.Wallet;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
@@ -47,12 +48,20 @@ public class ServerKey {
     @Column(name = "kms_reference", length = 255)
     private String kmsReference;
 
+    // Relation vers le wallet qui utilise cette clé (optionnel)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wallet_id")
+    private Wallet wallet;
+
+    @Column(name = "wallet_id", insertable = false, updatable = false)
+    private UUID walletId;
+
     public ServerKey() {
         this.createdAt = LocalDateTime.now();
         this.status = ServerKeyStatus.ACTIVE;
     }
 
-    // Getters et Setters
+    // Getters & Setters
     public UUID getServerKeyId() { return serverKeyId; }
     public void setServerKeyId(UUID serverKeyId) { this.serverKeyId = serverKeyId; }
 
@@ -82,4 +91,26 @@ public class ServerKey {
 
     public String getKmsReference() { return kmsReference; }
     public void setKmsReference(String kmsReference) { this.kmsReference = kmsReference; }
+
+    public Wallet getWallet() { return wallet; }
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
+        if (wallet != null) {
+            this.walletId = wallet.getWalletId();
+        }
+    }
+
+    public UUID getWalletId() {
+        return walletId != null ? walletId :
+                (wallet != null ? wallet.getWalletId() : null);
+    }
+
+    // Méthodes métier
+    public boolean isExpired() {
+        return expiresAt != null && expiresAt.isBefore(LocalDateTime.now());
+    }
+
+    public boolean isActive() {
+        return status == ServerKeyStatus.ACTIVE && !isExpired();
+    }
 }

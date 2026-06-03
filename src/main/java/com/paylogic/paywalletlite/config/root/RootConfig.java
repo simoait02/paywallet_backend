@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @ComponentScan(basePackages = {
         "com.paylogic.paywalletlite.service",
+        "com.paylogic.paywalletlite.mapper",
         "com.paylogic.paywalletlite.repository",
         "com.paylogic.paywalletlite.util",
         "com.paylogic.paywalletlite.validation",

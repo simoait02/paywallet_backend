@@ -1,7 +1,7 @@
 package com.paylogic.paywalletlite.domain.transaction;
 
 import com.paylogic.paywalletlite.domain.transaction.enums.RefundStatus;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
@@ -31,6 +31,9 @@ public class TransactionRefund {
     @Column(name = "status", nullable = false, length = 20)
     private RefundStatus status;
 
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
     @Column(name = "processed_at")
     private LocalDateTime processedAt;
 
@@ -56,6 +59,9 @@ public class TransactionRefund {
 
     public RefundStatus getStatus() { return status; }
     public void setStatus(RefundStatus status) { this.status = status; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = processedAt; }
 
     public LocalDateTime getProcessedAt() { return processedAt; }
     public void setProcessedAt(LocalDateTime processedAt) { this.processedAt = processedAt; }

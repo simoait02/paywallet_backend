@@ -4,6 +4,7 @@ import com.paylogic.paywalletlite.domain.identity.Device;
 import com.paylogic.paywalletlite.domain.identity.DeviceSession;
 import com.paylogic.paywalletlite.domain.identity.User;
 import com.paylogic.paywalletlite.domain.identity.enums.AccountStatus;
+import com.paylogic.paywalletlite.domain.identity.enums.DevicePlatform;
 import com.paylogic.paywalletlite.domain.identity.enums.DeviceStatus;
 import com.paylogic.paywalletlite.domain.identity.enums.SessionStatus;
 import com.paylogic.paywalletlite.dto.request.LoginRequestDto;
@@ -54,6 +55,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
                 .orElseThrow(() -> new BusinessException("Invalid credentials"));
 
+        // Vérifications existantes du compte
         if (user.getStatus() == AccountStatus.CLOSED) {
             throw new BusinessException("Account is closed");
         }
@@ -67,22 +69,36 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new BusinessException("Invalid credentials");
         }
 
+        // ============================================================
+        // GESTION DU DEVICE AU LOGIN
+        // ============================================================
+
         Device device = deviceRepository.findByUserIdAndHardwareId(user.getUserId(), request.getHardwareId())
-                .orElseThrow(() -> new BusinessException("Device not registered"));
+                .orElse(null);
+
+        if (device == null) {
+            // Option A : Rejeter le login (strict)
+            throw new BusinessException("Device not recognized. Please register this device first.");
+
+            // Option B : Créer automatiquement le device (permissif)
+            // device = createNewDevice(user, request);
+        }
 
         if (device.getStatus() != DeviceStatus.ACTIVE) {
-            throw new BusinessException("Device is not active");
+            throw new BusinessException("Device is " + device.getStatus() + ". Please contact support.");
         }
 
         // Generate tokens
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getUserId().toString(), device.getDeviceId().toString());
+        String accessToken = jwtTokenProvider.generateAccessToken(
+                user.getUserId().toString(),
+                device.getDeviceId().toString()
+        );
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUserId().toString());
 
         // Create session
         DeviceSession session = new DeviceSession();
-        session.setSessionId(UUID.randomUUID());
-        session.setDeviceId(device.getDeviceId());
-        session.setUserId(user.getUserId());
+        session.setDevice(device);
+        session.setUser(user);
         session.setJwtTokenHash(HashUtil.sha256(accessToken));
         session.setCreatedAt(LocalDateTime.now());
         session.setExpiresAt(LocalDateTime.now().plusHours(24));
@@ -93,6 +109,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         deviceRepository.updateLastSeen(device.getDeviceId());
         userService.recordSuccessfulLogin(user.getUserId());
 
+        // Build response
         AuthResponseDto response = new AuthResponseDto();
         response.setAccessToken(accessToken);
         response.setRefreshToken(refreshToken);
@@ -100,9 +117,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         response.setExpiresIn(86400);
         response.setUserId(user.getUserId());
         response.setRole(user.getRole());
+        response.setDeviceId(device.getDeviceId()); // Ajouter deviceId dans la réponse
 
         return response;
     }
+
+    /**
+     * Crée automatiquement un nouveau device pour l'utilisateur (Option B).
+
+    private Device createNewDevice(User user, LoginRequestDto request) {
+        Device device = new Device();
+        device.setUser(user);
+        device.setDeviceName(request.getDeviceName() != null ? request.getDeviceName() : "Unknown Device");
+        device.setHardwareId(request.getHardwareId());
+        device.setPlatform(request.getPlatform() != null ?
+                request.getPlatform() : DevicePlatform.ANDROID);
+        device.setRegisteredAt(LocalDateTime.now());
+        device.setLastSeen(LocalDateTime.now());
+        device.setStatus(DeviceStatus.ACTIVE);
+        device.setIsPrimary(false); // Pas le device principal (créé au register)
+        return deviceRepository.save(device);
+    }
+     */
 
     @Override
     @Transactional

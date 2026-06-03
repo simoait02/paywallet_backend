@@ -1,7 +1,7 @@
 package com.paylogic.paywalletlite.domain.risk;
 
 import com.paylogic.paywalletlite.domain.risk.enums.RiskLevel;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
@@ -25,7 +25,7 @@ public class RiskProfile {
     private Integer riskScore;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "level", nullable = false, length = 20)
+    @Column(name = "risk_level", nullable = false, length = 20)
     private RiskLevel level;
 
     @Column(name = "assessed_at", nullable = false)

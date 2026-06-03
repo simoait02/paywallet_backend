@@ -2,7 +2,7 @@ package com.paylogic.paywalletlite.domain.wallet;
 
 import com.paylogic.paywalletlite.domain.wallet.enums.KeyStatus;
 import com.paylogic.paywalletlite.domain.wallet.enums.KeyStorageType;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
@@ -18,7 +18,11 @@ public class WalletKeyPair {
     @Column(name = "keypair_id", updatable = false, nullable = false)
     private UUID keypairId;
 
-    @Column(name = "wallet_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wallet_id", nullable = false)
+    private Wallet wallet;
+
+    @Column(name = "wallet_id", insertable = false, updatable = false)
     private UUID walletId;
 
     @Column(name = "public_key", nullable = false, length = 4000)
@@ -64,6 +68,14 @@ public class WalletKeyPair {
 
     public UUID getWalletId() { return walletId; }
     public void setWalletId(UUID walletId) { this.walletId = walletId; }
+
+    public Wallet getWallet() {
+        return wallet;
+    }
+
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
+    }
 
     public String getPublicKey() { return publicKey; }
     public void setPublicKey(String publicKey) { this.publicKey = publicKey; }

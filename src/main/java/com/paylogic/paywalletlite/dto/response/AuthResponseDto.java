@@ -11,6 +11,8 @@ public class AuthResponseDto {
     private String tokenType;
     private long expiresIn;
     private UUID userId;
+    private UUID deviceId;
+
     private RoleType role;
 
     public AuthResponseDto() {}
@@ -32,4 +34,12 @@ public class AuthResponseDto {
 
     public RoleType getRole() { return role; }
     public void setRole(RoleType role) { this.role = role; }
+
+    public UUID getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(UUID deviceId) {
+        this.deviceId = deviceId;
+    }
 }

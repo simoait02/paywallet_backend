@@ -1,11 +1,11 @@
 package com.paylogic.paywalletlite.service.identity;
 
+import com.paylogic.paywalletlite.domain.identity.Device;
 import com.paylogic.paywalletlite.domain.identity.User;
-import com.paylogic.paywalletlite.domain.identity.enums.AccountStatus;
-import com.paylogic.paywalletlite.domain.identity.enums.RoleType;
-import com.paylogic.paywalletlite.domain.identity.enums.KYCStatus;
+import com.paylogic.paywalletlite.domain.identity.enums.*;
 import com.paylogic.paywalletlite.dto.request.RegisterRequestDto;
 import com.paylogic.paywalletlite.exception.BusinessException;
+import com.paylogic.paywalletlite.repository.identity.DeviceRepository;
 import com.paylogic.paywalletlite.repository.identity.UserRepository;
 import com.paylogic.paywalletlite.security.crypto.HashUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,17 +22,21 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final DeviceRepository deviceRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, DeviceRepository deviceRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.deviceRepository = deviceRepository;
+
     }
 
     @Override
     @Transactional
     public User registerUser(RegisterRequestDto request) throws BusinessException {
+        // Vérifications existantes
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new BusinessException("Phone number already registered: " + request.getPhoneNumber());
         }
@@ -40,8 +44,8 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException("Email already registered: " + request.getEmail());
         }
 
+        // 1. Créer l'utilisateur
         User user = new User();
-        user.setUserId(UUID.randomUUID());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());
@@ -49,13 +53,28 @@ public class UserServiceImpl implements UserService {
         user.setNationalIdNumber(request.getNationalIdNumber());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setPinHash(request.getPin() != null ? passwordEncoder.encode(request.getPin()) : null);
-        user.setRole(RoleType.CUSTOMER);
+        user.setRole(request.getRole() != null ? request.getRole() : RoleType.CUSTOMER);
         user.setStatus(AccountStatus.ACTIVE);
         user.setRegistrationTimestamp(LocalDateTime.now());
         user.setFailedLoginAttempts(0);
         user.setKycVerificationStatus(KYCStatus.PENDING);
 
-        return userRepository.save(user);
+        user = userRepository.save(user);
+
+        // 2. Créer et associer le device automatiquement
+        Device device = new Device();
+        device.setUser(user);
+        device.setDeviceName(request.getDeviceName());
+        device.setHardwareId(request.getHardwareId());
+        device.setPlatform(DevicePlatform.valueOf(request.getPlatform()));
+        device.setRegisteredAt(LocalDateTime.now());
+        device.setLastSeen(LocalDateTime.now());
+        device.setStatus(DeviceStatus.ACTIVE);
+        device.setIsPrimary(true); // Premier device = device principal
+
+        deviceRepository.save(device);
+
+        return user;
     }
 
     @Override

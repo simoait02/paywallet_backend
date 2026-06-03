@@ -3,9 +3,9 @@ package com.paylogic.paywalletlite.repository.identity;
 import com.paylogic.paywalletlite.domain.identity.User;
 import com.paylogic.paywalletlite.domain.identity.enums.AccountStatus;
 import com.paylogic.paywalletlite.domain.identity.enums.RoleType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
