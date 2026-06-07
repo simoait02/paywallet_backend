@@ -24,7 +24,14 @@ public enum KeyStorageType {
     /**
      * Clé encryptée et stocké dans la base de données du server.
      * */
-    SERVER_ENCRYPTED;
+    SERVER_ENCRYPTED,
+
+    /**
+     * Platform-agnostic marker: private key lives on the device's secure
+     * element (Android Keystore or iOS Secure Enclave). The backend never holds
+     * the privkey. Used by the CSR-based wallet creation flow.
+     */
+    DEVICE_ONLY;
 
     /**
      * Méthode utilitaire pour obtenir une description lisible du type de stockage.
@@ -37,6 +44,8 @@ public enum KeyStorageType {
                 return "Stockage sécurisé via Apple Keychain et Secure Enclave.";
             case SERVER_ENCRYPTED:
                 return "Stockage sécurisé dans la base données du server";
+            case DEVICE_ONLY:
+                return "Private key resident on the device's secure element (platform-agnostic).";
             default:
                 return "Type de stockage inconnu.";
         }

@@ -15,11 +15,18 @@ import com.paylogic.paywalletlite.mapper.WalletConfigMapper;
 import com.paylogic.paywalletlite.repository.wallet.WalletConfigRepository;
 import com.paylogic.paywalletlite.repository.wallet.WalletKeyPairRepository;
 import com.paylogic.paywalletlite.security.crypto.AesEncryptionUtil;
+import com.paylogic.paywalletlite.security.crypto.EcdsaSignatureUtil;
 import com.paylogic.paywalletlite.security.crypto.KeyGeneratorUtil;
 import com.paylogic.paywalletlite.service.security.CertificateService;
 import com.paylogic.paywalletlite.service.security.CryptographicService;
 import com.paylogic.paywalletlite.dto.request.CreateWalletRequestDto;
+import com.paylogic.paywalletlite.dto.response.ProvisioningBundleDto;
+import com.paylogic.paywalletlite.dto.response.TrustedServerKeyDto;
 import com.paylogic.paywalletlite.dto.response.WalletResponseDto;
+import com.paylogic.paywalletlite.domain.crypto.Certificate;
+import com.paylogic.paywalletlite.domain.crypto.CertificateAuthority;
+import com.paylogic.paywalletlite.domain.crypto.enums.CertificateStatus;
+import com.paylogic.paywalletlite.domain.crypto.enums.ServerKeyStatus;
 import com.paylogic.paywalletlite.exception.BusinessException;
 import com.paylogic.paywalletlite.repository.wallet.WalletRepository;
 import com.paylogic.paywalletlite.service.audit.AuditService;
@@ -52,6 +59,10 @@ public class WalletServiceImpl implements WalletService {
     private final WalletKeyPairRepository walletKeyPairRepository;
     private final KeyGeneratorUtil keyGeneratorUtil;
     private final AesEncryptionUtil aesEncryptionUtil;
+    private final EcdsaSignatureUtil ecdsaSignatureUtil;
+
+    /** Allowed PoP timestamp skew in milliseconds (±5 minutes). */
+    private static final long POP_FRESHNESS_WINDOW_MS = 5 * 60 * 1000L;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -66,6 +77,7 @@ public class WalletServiceImpl implements WalletService {
                              WalletKeyPairRepository walletKeyPairRepository,
                              KeyGeneratorUtil keyGeneratorUtil,
                              AesEncryptionUtil aesEncryptionUtil,
+                             EcdsaSignatureUtil ecdsaSignatureUtil,
                              CertificateService certificateService) {
         this.walletRepository = walletRepository;
         this.walletConfigRepository = walletConfigRepository;
@@ -74,9 +86,38 @@ public class WalletServiceImpl implements WalletService {
         this.walletKeyPairRepository = walletKeyPairRepository;
         this.keyGeneratorUtil = keyGeneratorUtil;
         this.aesEncryptionUtil = aesEncryptionUtil;
+        this.ecdsaSignatureUtil = ecdsaSignatureUtil;
         this.walletConfigService = walletConfigService;
         this.walletConfigMapper = walletConfigMapper;
         this.certificateService = certificateService;
+    }
+
+    /**
+     * Verifies the device proof-of-possession submitted with a wallet creation
+     * request. The PoP signature must:
+     * <ol>
+     *   <li>Have a timestamp within {@link #POP_FRESHNESS_WINDOW_MS} of server time.</li>
+     *   <li>Verify against the supplied device public key over the canonical payload
+     *       {@code userId|publicKeyBase64|popTimestamp}.</li>
+     * </ol>
+     * The userId binding prevents replaying a captured PoP for a different account.
+     */
+    private void verifyProofOfPossession(UUID userId, CreateWalletRequestDto request) {
+        Long popTs = request.getPopTimestamp();
+        if (popTs == null) {
+            throw new BusinessException("PoP timestamp is required");
+        }
+        long skew = Math.abs(System.currentTimeMillis() - popTs);
+        if (skew > POP_FRESHNESS_WINDOW_MS) {
+            throw new BusinessException("PoP timestamp out of freshness window (skew "
+                    + skew + " ms, max " + POP_FRESHNESS_WINDOW_MS + " ms)");
+        }
+        String payload = userId + "|" + request.getPublicKeyBase64() + "|" + popTs;
+        boolean valid = ecdsaSignatureUtil.verify(
+                payload, request.getProofOfPossession(), request.getPublicKeyBase64());
+        if (!valid) {
+            throw new BusinessException("Proof-of-possession signature verification failed");
+        }
     }
 
     @Override
@@ -92,6 +133,11 @@ public class WalletServiceImpl implements WalletService {
             throw new BusinessException("Maximum wallet limit reached for user");
         }
 
+        // Verify device proof-of-possession before doing anything else.
+        // The device pubkey is stored on the wallet so the admin approval step
+        // can issue a certificate against it without ever holding the privkey.
+        verifyProofOfPossession(userId, request);
+
         // Get or create config
         WalletConfig config;
         if (request.getConfigId() != null) {
@@ -103,7 +149,6 @@ public class WalletServiceImpl implements WalletService {
             config = walletConfigService.createConfig(configDto);
         }
 
-        // 🔥 RÉCUPÉRER L'ENTITÉ TokenAllocationConfig DEPUIS LA BASE
         TokenAllocationConfig tokenAllocationConfig = entityManager.find(
                 TokenAllocationConfig.class,
                 UUID.fromString("c3616d30-92a6-4acc-8b0c-2add485390ec")
@@ -114,19 +159,16 @@ public class WalletServiceImpl implements WalletService {
         }
 
         Wallet wallet = new Wallet();
-
-        // 🔥 SETTER LES RELATIONS JPA (pas seulement les UUID)
-        wallet.setUser(user);                    // ← Relation JPA
-        wallet.setWalletConfig(config);           // ← Relation JPA
-        wallet.setTokenAllocationConfig(tokenAllocationConfig); // ← Relation JPA
+        wallet.setUser(user);
+        wallet.setWalletConfig(config);
+        wallet.setTokenAllocationConfig(tokenAllocationConfig);
         wallet.setCurrency(request.getWalletCurrency());
+        wallet.setPublicKey(request.getPublicKeyBase64());
 
         wallet.setStatus(WalletStatus.PENDING_APPROVAL);
         wallet.setOnlineBalance(BigDecimal.ZERO);
         wallet.setOfflineBalance(BigDecimal.ZERO);
         wallet.setPendingBalance(BigDecimal.ZERO);
-
-        System.out.println("Nouvelle Wallet : " + wallet);
 
         Wallet savedWallet = walletRepository.save(wallet);
 
@@ -137,6 +179,10 @@ public class WalletServiceImpl implements WalletService {
                 savedWallet.getWalletId(),
                 "WALLET",
                 "Wallet creation requested with type: " + request.getWalletType()
+                        + "; device pubkey accepted; attestation "
+                        + (request.getAttestationChain() != null && !request.getAttestationChain().isEmpty()
+                                ? "present (verification deferred to B1.5)"
+                                : "absent")
         );
 
         return mapToResponseDto(savedWallet);
@@ -180,65 +226,72 @@ public class WalletServiceImpl implements WalletService {
             throw new BusinessException("Wallet is not pending approval. Current status: " + wallet.getStatus());
         }
 
+        // The device pubkey was captured at requestWalletCreation time and lives
+        // on the wallet. The backend never generates or holds the privkey.
+        String devicePublicKey = wallet.getPublicKey();
+        if (devicePublicKey == null || devicePublicKey.isEmpty()) {
+            throw new BusinessException(
+                    "Wallet has no device public key; cannot approve (was it created via the legacy server-keygen path?)");
+        }
 
-        // ============================================================
-        // 1. GENERATION PAIRE DE CLES ECDSA POUR LE WALLET
-        // ============================================================
-        KeyGeneratorUtil.KeyPairEncoded keyPair = keyGeneratorUtil.generateEncodedKeyPair();
-
-        // ============================================================
-        // 2. CHIFFREMENT DE LA CLE PRIVEE
-        // ============================================================
-        String encryptedPrivateKey = aesEncryptionUtil.encrypt(keyPair.getPrivateKeyBase64());
-
-        System.out.println("KEY PAIR { PRIV :  "+ keyPair.getPrivateKeyBase64() + " PUB: "+ keyPair.getPublicKeyBase64());
-
-        // ============================================================
-        // 3. STOCKAGE DU KEYPAIR
-        // ============================================================
+        // Persist a WalletKeyPair record describing the device-resident keypair.
+        // privateKeyEncrypted is null; storageType signals the privkey lives on
+        // the device's secure element, not on the server.
         WalletKeyPair walletKeyPair = new WalletKeyPair();
         walletKeyPair.setWallet(wallet);
-        walletKeyPair.setPublicKey(keyPair.getPublicKeyBase64());
-        walletKeyPair.setPrivateKeyEncrypted(encryptedPrivateKey);
+        walletKeyPair.setPublicKey(devicePublicKey);
+        walletKeyPair.setPrivateKeyEncrypted(null);
         walletKeyPair.setKeyAlgorithm("ECDSA_P256");
-        walletKeyPair.setStorageType(KeyStorageType.SERVER_ENCRYPTED);
+        walletKeyPair.setStorageType(KeyStorageType.DEVICE_ONLY);
         walletKeyPair.setExpiresAt(LocalDateTime.now().plusDays(365));
         walletKeyPair.setStatus(KeyStatus.ACTIVE);
 
-        System.out.println("Wallet : "+ walletKeyPair.getPublicKey());
-
-        // Signature du serveur sur la clé publique (preuve d'émission)
+        // Server-issued attestation that this pubkey was approved by us (so other
+        // peers / the device itself can later verify the binding wallet↔pubkey).
         try {
             ServerKey signingKey = cryptographicService.getActiveKey(ServerKeyPurpose.TOKEN_SIGNING);
-            String keyData = wallet.getWalletId().toString() + "|" + keyPair.getPublicKeyBase64();
+            String keyData = wallet.getWalletId() + "|" + devicePublicKey;
             String serverSignature = cryptographicService.signData(keyData, signingKey.getServerKeyId());
             walletKeyPair.setServerIssuanceSignature(serverSignature);
         } catch (BusinessException e) {
-            // Si pas de clé de signing dispo, continuer sans signature
             walletKeyPair.setServerIssuanceSignature("PENDING_SIGNATURE");
         }
 
         walletKeyPairRepository.save(walletKeyPair);
 
-        // ============================================================
-        // 4. MISE A JOUR DU WALLET
-        // ============================================================
-        wallet.setPublicKey(keyPair.getPublicKeyBase64());
         wallet.setCurrentKeypairId(walletKeyPair.getKeypairId());
         wallet.setStatus(WalletStatus.APPROVED);
 
         Wallet updated = walletRepository.save(wallet);
 
-        // ============================================================
-        // 5. AUDIT LOG
-        // ============================================================
+        // Issue an X.509-style certificate binding the device pubkey to the wallet,
+        // signed by the active CA. The device fetches this in the provisioning
+        // bundle and presents it to peers during the NFC/BLE handshake.
+        try {
+            com.paylogic.paywalletlite.domain.crypto.CertificateAuthority ca =
+                    certificateService.getActiveCA();
+            certificateService.issueCertificate(walletId, ca.getCaId());
+        } catch (BusinessException e) {
+            // Approval succeeds even if no active CA is yet configured; the wallet
+            // won't be able to fetch a provisioning bundle until the operator
+            // initializes a CA via /v1/admin/certificates/ca.
+            auditService.logEvent(
+                    AuditEventType.WALLET_APPROVED,
+                    null,
+                    "ADMIN",
+                    walletId,
+                    "WALLET",
+                    "Wallet approved but certificate issuance skipped: " + e.getMessage()
+            );
+        }
+
         auditService.logEvent(
                 AuditEventType.WALLET_APPROVED,
                 null,
                 "ADMIN",
                 walletId,
                 "WALLET",
-                "Wallet approved, keypair generated: " + walletKeyPair.getKeypairId()
+                "Wallet approved, device keypair recorded: " + walletKeyPair.getKeypairId()
         );
 
         return mapToResponseDto(updated);
@@ -654,6 +707,52 @@ public class WalletServiceImpl implements WalletService {
                 .orElseThrow(() -> new BusinessException("No active wallet found for user: " + userId));
 
         return mapToResponseDto(activeWallet);
+    }
+
+    @Override
+    public ProvisioningBundleDto getProvisioningBundle(UUID userId) throws BusinessException {
+        Wallet wallet = walletRepository.findByUserId(userId).stream()
+                .filter(w -> w.getStatus() == WalletStatus.ACTIVE
+                        || w.getStatus() == WalletStatus.APPROVED)
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(
+                        "No ACTIVE or APPROVED wallet found for user: " + userId));
+
+        // Resolve the wallet's current VALID certificate (most recently issued).
+        Certificate cert = certificateService.findByWalletId(wallet.getWalletId()).stream()
+                .filter(c -> c.getStatus() == CertificateStatus.VALID)
+                .reduce((first, second) -> second)
+                .orElseThrow(() -> new BusinessException(
+                        "No valid certificate on file for wallet " + wallet.getWalletId()
+                                + "; ensure the wallet was approved after the device-key migration"));
+
+        CertificateAuthority ca = certificateService.getActiveCA();
+
+        // All trusted TOKEN_SIGNING keys: ACTIVE (current) plus any rotated keys
+        // not yet expired. Tokens signed under a rotated-but-not-yet-expired key
+        // remain verifiable on devices that have refreshed since the rotation.
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        List<TrustedServerKeyDto> trusted = cryptographicService
+                .findByPurpose(com.paylogic.paywalletlite.domain.crypto.enums.ServerKeyPurpose.TOKEN_SIGNING)
+                .stream()
+                .filter(k -> k.getStatus() == ServerKeyStatus.ACTIVE
+                        || (k.getExpiresAt() != null && k.getExpiresAt().isAfter(now)))
+                .map(k -> new TrustedServerKeyDto(
+                        k.getServerKeyId(),
+                        k.getPublicKeyPem(),
+                        k.getKeyPurpose() != null ? k.getKeyPurpose().name() : null,
+                        k.getStatus() != null ? k.getStatus().name() : null,
+                        k.getCreatedAt(),
+                        k.getExpiresAt()
+                ))
+                .collect(Collectors.toList());
+
+        ProvisioningBundleDto bundle = new ProvisioningBundleDto();
+        bundle.setWalletId(wallet.getWalletId());
+        bundle.setWalletCertificatePem(cert.getCertificatePem());
+        bundle.setCaPublicKeyPem(ca.getPublicKeyPem());
+        bundle.setTrustedServerKeys(trusted);
+        return bundle;
     }
 
     @Override

@@ -9,7 +9,9 @@ import com.paylogic.paywalletlite.dto.response.ApiErrorResponseDto;
 import com.paylogic.paywalletlite.dto.response.TokenChainResponseDto;
 import com.paylogic.paywalletlite.dto.response.TokenResponseDto;
 import com.paylogic.paywalletlite.exception.BusinessException;
+import com.paylogic.paywalletlite.security.AuthenticationFacade;
 import com.paylogic.paywalletlite.service.token.*;
+import com.paylogic.paywalletlite.service.wallet.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,8 @@ public class TokenController {
     private final TokenTransferTraceService tokenTransferTraceService;
     private final TokenValidationService tokenValidationService;
     private final TokenSignatureService tokenSignatureService;
+    private final WalletService walletService;
+    private final AuthenticationFacade authenticationFacade;
 
     @Autowired
     public TokenController(TokenService tokenService,
@@ -42,7 +46,9 @@ public class TokenController {
                            TokenRedemptionService tokenRedemptionService,
                            TokenTransferTraceService tokenTransferTraceService,
                            TokenValidationService tokenValidationService,
-                           TokenSignatureService tokenSignatureService) {
+                           TokenSignatureService tokenSignatureService,
+                           WalletService walletService,
+                           AuthenticationFacade authenticationFacade) {
         this.tokenService = tokenService;
         this.tokenAllocationService = tokenAllocationService;
         this.tokenGenerationService = tokenGenerationService;
@@ -51,6 +57,8 @@ public class TokenController {
         this.tokenTransferTraceService = tokenTransferTraceService;
         this.tokenValidationService = tokenValidationService;
         this.tokenSignatureService = tokenSignatureService;
+        this.walletService = walletService;
+        this.authenticationFacade = authenticationFacade;
     }
 
     // ============================================================
@@ -143,6 +151,25 @@ public class TokenController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiErrorResponseDto("NOT_FOUND", e.getMessage(), null));
         }
+    }
+
+    /**
+     * GET /api/v1/tokens/me
+     * Tokens du wallet ACTIVE de l'utilisateur connecté.
+     * Filtre optionnel par status via ?status=ALLOCATED|TRANSFERRED|...
+     */
+    @GetMapping("/me")
+    public ResponseEntity<List<TokenResponseDto>> getMyTokens(
+            @RequestParam(value = "status", required = false) TokenStatus status) {
+        UUID userId = authenticationFacade.getCurrentUserId();
+        UUID walletId = walletService.getActiveWalletByUserId(userId).getWalletId();
+
+        List<Token> tokens = (status == null)
+                ? tokenService.findByWalletId(walletId)
+                : tokenService.findByWalletIdAndStatus(walletId, status);
+
+        return ResponseEntity.ok(
+                tokens.stream().map(this::toResponseDto).collect(Collectors.toList()));
     }
 
     /**

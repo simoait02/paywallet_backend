@@ -4,6 +4,7 @@ import com.paylogic.paywalletlite.domain.wallet.Wallet;
 import com.paylogic.paywalletlite.domain.wallet.enums.CurrencyCode;
 import com.paylogic.paywalletlite.dto.request.CreateWalletRequestDto;
 import com.paylogic.paywalletlite.dto.request.WalletConfigUpdateRequestDto;
+import com.paylogic.paywalletlite.dto.response.ProvisioningBundleDto;
 import com.paylogic.paywalletlite.dto.response.WalletResponseDto;
 import com.paylogic.paywalletlite.exception.BusinessException;
 
@@ -14,6 +15,13 @@ import java.util.UUID;
 public interface WalletService {
 
     WalletResponseDto requestWalletCreation(UUID userId, CreateWalletRequestDto request);
+
+    /**
+     * Returns the bundle a device needs to operate offline: its wallet
+     * certificate, the CA trust anchor, and the list of currently-trusted
+     * server signing keys. Looks up the caller's single ACTIVE wallet.
+     */
+    ProvisioningBundleDto getProvisioningBundle(UUID userId) throws BusinessException;
 
     WalletResponseDto getWalletById(UUID walletId);
 

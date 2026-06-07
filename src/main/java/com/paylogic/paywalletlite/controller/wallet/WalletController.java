@@ -2,6 +2,7 @@ package com.paylogic.paywalletlite.controller.wallet;
 
 import com.paylogic.paywalletlite.dto.request.CreateWalletRequestDto;
 import com.paylogic.paywalletlite.dto.request.FundWalletRequestDto;
+import com.paylogic.paywalletlite.dto.response.ProvisioningBundleDto;
 import com.paylogic.paywalletlite.dto.response.WalletConfigResponseDto;
 import com.paylogic.paywalletlite.dto.response.WalletResponseDto;
 import com.paylogic.paywalletlite.exception.BusinessException;
@@ -97,6 +98,21 @@ public class WalletController {
         UUID currentUserId = authenticationFacade.getCurrentUserId();
         WalletResponseDto wallet = walletService.getActiveWalletByUserId(currentUserId);
         return ResponseEntity.ok(wallet);
+    }
+
+    /**
+     * GET /v1/wallets/me/provisioning
+     *
+     * Returns the provisioning bundle the device needs to operate offline:
+     * the wallet certificate, the CA trust anchor, and the list of currently
+     * trusted server signing keys. Devices should call this once after wallet
+     * approval and refresh it periodically (e.g., on every successful sync).
+     */
+    @GetMapping("/me/provisioning")
+    public ResponseEntity<ProvisioningBundleDto> getMyProvisioningBundle() {
+        UUID currentUserId = authenticationFacade.getCurrentUserId();
+        ProvisioningBundleDto bundle = walletService.getProvisioningBundle(currentUserId);
+        return ResponseEntity.ok(bundle);
     }
 
     /**

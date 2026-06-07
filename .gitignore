@@ -25,11 +25,8 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
-.mvn/
-mvnw
-mvnw.cmd
-!.mvn/wrapper/maven-wrapper.jar
-!.mvn/wrapper/maven-wrapper.properties
+# Keep the Maven Wrapper (mvnw, mvnw.cmd, .mvn/wrapper/*) tracked so anyone
+# can build the project without a system-wide Maven install.
 
 # ============================================================
 # INTELLIJ IDEA

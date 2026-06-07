@@ -28,7 +28,12 @@ public class WalletKeyPair {
     @Column(name = "public_key", nullable = false, length = 4000)
     private String publicKey;
 
-    @Column(name = "private_key_encrypted", nullable = false, length = 4000)
+    /**
+     * AES-encrypted private key. Populated only for legacy
+     * {@code SERVER_ENCRYPTED} keypairs. For {@code DEVICE_ONLY} keypairs the
+     * privkey lives on the device's secure element and this column is null.
+     */
+    @Column(name = "private_key_encrypted", nullable = true, length = 4000)
     private String privateKeyEncrypted;
 
     @Column(name = "key_algorithm", length = 50)

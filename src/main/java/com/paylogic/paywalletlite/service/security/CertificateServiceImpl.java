@@ -59,25 +59,25 @@ public class CertificateServiceImpl implements CertificateService {
             throw new BusinessException("CA is not active: " + caId);
         }
 
-        // Générer une paire de clés pour le wallet
-        KeyGeneratorUtil.KeyPairEncoded keyPair = keyGeneratorUtil.generateEncodedKeyPair();
+        // The wallet's pubkey was supplied by the device at wallet-creation time
+        // (see WalletServiceImpl.requestWalletCreation) and validated against the
+        // device's proof of possession. We bind the certificate to that pubkey.
+        String walletPublicKey = wallet.getPublicKey();
+        if (walletPublicKey == null || walletPublicKey.isEmpty()) {
+            throw new BusinessException(
+                    "Wallet has no public key on file; cannot issue a certificate against it");
+        }
 
-        // Créer le certificat
         Certificate certificate = new Certificate();
         certificate.setWallet(wallet);
-        certificate.setCertificatePem(buildCertificatePem(wallet, keyPair, ca));
+        certificate.setCertificatePem(buildCertificatePem(wallet, walletPublicKey, ca));
         certificate.setThumbprint(generateThumbprint(certificate.getCertificatePem()));
         certificate.setIssuerCa(ca);
         certificate.setIssuedAt(LocalDateTime.now());
         certificate.setExpiresAt(LocalDateTime.now().plusDays(CERT_LIFETIME_DAYS));
         certificate.setStatus(CertificateStatus.VALID);
 
-        // Mettre à jour le wallet avec la clé publique
-        wallet.setPublicKey(keyPair.getPublicKeyBase64());
-
         certificateRepository.save(certificate);
-        walletRepository.save(wallet);
-
         return certificate;
     }
 
@@ -175,10 +175,10 @@ public class CertificateServiceImpl implements CertificateService {
 
         return hash.substring(0, 64);
     }
-    private String buildCertificatePem(Wallet wallet, KeyGeneratorUtil.KeyPairEncoded keyPair, CertificateAuthority ca) {
+    private String buildCertificatePem(Wallet wallet, String publicKeyBase64, CertificateAuthority ca) {
         return "-----BEGIN CERTIFICATE-----\n" +
                 "WalletID: " + wallet.getWalletId() + "\n" +
-                "PublicKey: " + keyPair.getPublicKeyBase64() + "\n" +
+                "PublicKey: " + publicKeyBase64 + "\n" +
                 "Issuer: " + ca.getCaName() + "\n" +
                 "-----END CERTIFICATE-----";
     }
